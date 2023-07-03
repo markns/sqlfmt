@@ -31,7 +31,7 @@ class NodeManager:
         else:
             prev_token, extra_whitespace = get_previous_token(previous_node)
             prefix = self.whitespace(token, prev_token, extra_whitespace)
-            value = self.standardize_value(token)
+            value = self.standardize_value(token, prev_token)
 
         return Node(
             token=token,
@@ -231,7 +231,7 @@ class NodeManager:
         else:
             return SPACE
 
-    def standardize_value(self, token: Token) -> str:
+    def standardize_value(self, token: Token, prev_token: Token) -> str:
         """
         Tokens that are words (not symbols) and aren't jinja
         or comments should be lowercased and have any internal
@@ -240,7 +240,12 @@ class NodeManager:
         if token.type.is_always_lowercased:
             return " ".join(token.token.lower().split())
         elif token.type is TokenType.NAME and not self.case_sensitive_names:
-            return token.token.lower()
+            # snowflake variant key paths are case-sensitive, therefore don't
+            # change case if the previous token was a colon.
+            if prev_token.type is TokenType.COLON:
+                return token.token
+            else:
+                return token.token.lower()
         else:
             return token.token
 
