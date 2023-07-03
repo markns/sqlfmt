@@ -242,7 +242,7 @@ class NodeManager:
         elif token.type is TokenType.NAME and not self.case_sensitive_names:
             # snowflake variant key paths are case-sensitive, therefore don't
             # change case if the previous token was a colon.
-            if prev_token.type is TokenType.COLON:
+            if prev_token and prev_token.type is TokenType.COLON:
                 return token.token
             else:
                 return token.token.lower()
